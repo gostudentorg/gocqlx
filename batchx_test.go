@@ -13,28 +13,25 @@ const (
 	LoggedBatch gocql.BatchType = 0
 )
 
-type MockQB struct {
-	names []string
-}
+type MockQB struct{}
 
 type QB interface {
-	//qb.Builder
-
 	Query(session Session) *Queryx
 	QueryContext(ctx context.Context, session Session) *Queryx
 }
 
-func (mqb *MockQB) Query(session Session) *Queryx {
+func (mqb *MockQB) Query(session SessionMock) *Queryx {
 	return &Queryx{
-		Names: []string{"Name", "Age", "First", "Last"},
+		Names:  []string{"Name", "Age", "First", "Last"},
+		Mapper: DefaultMapper,
 	}
 }
 
-func (mqb *MockQB) QueryContext(ctx context.Context, session Session) *Queryx {
+func (mqb *MockQB) QueryContext(_ context.Context, _ SessionMock) *Queryx {
 	return &Queryx{}
 }
 
-type user struct {
+type User struct {
 	insertQry MockQB
 }
 
@@ -63,15 +60,39 @@ func TestBatch_BindStruct(t *testing.T) {
 		Last:  "last",
 	}
 
-	t.Run("simple", func(t *testing.T) {
+	v2 := &struct {
+		User  string
+		Age   int
+		Email string
+		Phone string
+	}{
+		User:  "Daniel",
+		Age:   30,
+		Email: "daniel@yahoo.com",
+		Phone: "12345678",
+	}
+
+	t.Run("simple insert", func(t *testing.T) {
 		var sessionMock = &SessionMock{}
-		var session Session
 
 		batchWrapper := sessionMock.NewBatch(LoggedBatch)
-		usertmp := new(user)
-		//user.insertQry.QueryContext(context.Background(), session).BindStruct(v).ExecRelease()
+		usertmp := new(User)
 
-		err := batchWrapper.BindStruct(*usertmp.insertQry.Query(session), v)
+		err := batchWrapper.BindStruct(*usertmp.insertQry.Query(*sessionMock), v)
+
+		err = sessionMock.ExecuteBatch(batchWrapper.Batch)
+		assert.NoError(t, err)
+	})
+
+	t.Run("multiple inserts", func(t *testing.T) {
+		var sessionMock = &SessionMock{}
+
+		batchWrapper := sessionMock.NewBatch(LoggedBatch)
+		usertmp := new(User)
+
+		err := batchWrapper.BindStruct(*usertmp.insertQry.Query(*sessionMock), v)
+
+		err = batchWrapper.BindStruct(*usertmp.insertQry.Query(*sessionMock), v2)
 
 		err = sessionMock.ExecuteBatch(batchWrapper.Batch)
 		assert.NoError(t, err)
