@@ -3,6 +3,7 @@ module github.com/scylladb/gocqlx/v2
 go 1.17
 
 require (
+
 	github.com/gocql/gocql v1.0.0
 	github.com/google/go-cmp v0.5.4
 	github.com/maraino/go-mock v0.0.0-20180321183845-4c74c434cd3a
@@ -14,6 +15,7 @@ require (
 )
 
 require (
+
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
