@@ -14,7 +14,7 @@ func (s *Session) NewBatch(typ gocql.BatchType) *Batch {
 	}
 }
 
-func (b *Batch) BindStruct(qry Queryx, arg interface{}) error {
+func (b *Batch) BindStruct(qry *Queryx, arg interface{}) error {
 	arglist, err := qry.bindStructArgs(arg, nil)
 	if err != nil {
 		return err

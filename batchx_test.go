@@ -4,8 +4,6 @@ import (
 	"context"
 	"github.com/gocql/gocql"
 	"github.com/maraino/go-mock"
-	"github.com/stretchr/testify/assert"
-
 	"testing"
 )
 
@@ -78,10 +76,11 @@ func TestBatch_BindStruct(t *testing.T) {
 		batchWrapper := sessionMock.NewBatch(LoggedBatch)
 		usertmp := new(User)
 
-		err := batchWrapper.BindStruct(*usertmp.insertQry.Query(*sessionMock), v)
+		err := batchWrapper.BindStruct(usertmp.insertQry.Query(*sessionMock), v)
 
-		err = sessionMock.ExecuteBatch(batchWrapper.Batch)
-		assert.NoError(t, err)
+		if err = sessionMock.ExecuteBatch(batchWrapper.Batch); err != nil {
+			t.Fatal("execute batch operation", err)
+		}
 	})
 
 	t.Run("multiple inserts", func(t *testing.T) {
@@ -90,11 +89,13 @@ func TestBatch_BindStruct(t *testing.T) {
 		batchWrapper := sessionMock.NewBatch(LoggedBatch)
 		usertmp := new(User)
 
-		err := batchWrapper.BindStruct(*usertmp.insertQry.Query(*sessionMock), v)
+		err := batchWrapper.BindStruct(usertmp.insertQry.Query(*sessionMock), v)
 
-		err = batchWrapper.BindStruct(*usertmp.insertQry.Query(*sessionMock), v2)
+		err = batchWrapper.BindStruct(usertmp.insertQry.Query(*sessionMock), v2)
 
-		err = sessionMock.ExecuteBatch(batchWrapper.Batch)
-		assert.NoError(t, err)
+		if err = sessionMock.ExecuteBatch(batchWrapper.Batch); err != nil {
+			t.Fatal("execute batch operation", err)
+		}
+
 	})
 }
